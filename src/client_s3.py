@@ -133,20 +133,8 @@ class S3:
         # Check if the output folder exists, create it if it doesn't
         if not self.does_folder_exist(full_output_folder_s3):
             self.create_folder(full_output_folder_s3)
-
-        try:
-            # Continue with the counter calculation
-            files = self.get_files(full_output_folder_s3)
-            counter = max(
-                filter(
-                    lambda a: a[1][:-1] == filename and a[1][-1] == "_",
-                    map(map_filename, files)
-                )
-            )[0] + 1
-        except (ValueError, KeyError):
-            counter = 1
         
-        return full_output_folder_s3, filename, counter, subfolder, filename_prefix
+        return full_output_folder_s3, filename, subfolder, filename_prefix
 
 
 def get_s3_instance():

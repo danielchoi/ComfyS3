@@ -100,7 +100,10 @@ class S3:
     def upload_file(self, local_path, s3_path):
         try:
             bucket = self.s3_client.Bucket(self.bucket_name)
-            bucket.upload_file(local_path, s3_path)
+            extra_args = {
+                'ContentType': 'image/png'
+            }
+            bucket.upload_file(local_path, s3_path, ExtraArgs=extra_args)
             return s3_path
         except NoCredentialsError:
             err = "Credentials not available or not valid."

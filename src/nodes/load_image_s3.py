@@ -10,14 +10,18 @@ S3_INSTANCE = get_s3_instance()
 class LoadImageS3:
     @classmethod
     def INPUT_TYPES(s):
-        input_dir = os.getenv("S3_INPUT_DIR")
         try:
-            files = S3_INSTANCE.get_files(prefix=input_dir)
+            files = S3_INSTANCE.get_files(prefix=os.getenv("S3_INPUT_DIR"))
+            if files is None:
+                files = []
+            return {"required":
+                        {"image": (sorted(files), {"image_upload": False})},
+                    }
         except Exception as e:
-            files = []
-        return {"required":
-                    {"image": (sorted(files), {"image_upload": False})},
-                }
+            print(f"[ComfyS3] - ERROR - Failed to get input types: {str(e)}")
+            return {"required":
+                        {"image": ([], {"image_upload": False})},
+                    }
     
     CATEGORY = "ComfyS3"
     RETURN_TYPES = ("IMAGE", "MASK")

@@ -55,13 +55,23 @@ class S3:
     def get_files(self, prefix):
         if self.does_folder_exist(prefix):
             try:
-                bucket = self.s3_client.Bucket(self.bucket_name)
                 files = []
-                # Use paginator to handle large lists of objects
-                paginator = bucket.objects.filter(Prefix=prefix).paginate()
-                for page in paginator:
-                    for obj in page:
-                        files.append(obj.key.replace(prefix, ""))
+                # Get the base client from the resource
+                client = self.s3_client.meta.client
+                paginator = client.get_paginator('list_objects_v2')
+                
+                # Create a PageIterator
+                page_iterator = paginator.paginate(
+                    Bucket=self.bucket_name,
+                    Prefix=prefix
+                )
+                
+                # Iterate through pages
+                for page in page_iterator:
+                    if 'Contents' in page:
+                        for obj in page['Contents']:
+                            if obj['Key'] != prefix:  # Skip the prefix/folder itself
+                                files.append(obj['Key'].replace(prefix, ""))
                 return files
             except Exception as e:
                 err = f"Failed to get files from S3: {e}"

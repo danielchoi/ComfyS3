@@ -56,12 +56,17 @@ class S3:
         if self.does_folder_exist(prefix):
             try:
                 bucket = self.s3_client.Bucket(self.bucket_name)
-                files = [obj.key for obj in bucket.objects.filter(Prefix=prefix)]
-                files = [f.replace(prefix, "") for f in files]
+                files = []
+                # Use paginator to handle large lists of objects
+                paginator = bucket.objects.filter(Prefix=prefix).paginate()
+                for page in paginator:
+                    for obj in page:
+                        files.append(obj.key.replace(prefix, ""))
                 return files
             except Exception as e:
                 err = f"Failed to get files from S3: {e}"
                 logger.error(err)
+                return []
         else:
             return []
     
